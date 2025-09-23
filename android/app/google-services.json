@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "281978045498",
+    "project_id": "go-car-clean",
+    "storage_bucket": "go-car-clean.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:281978045498:android:b78c06688d462ace2c2103",
+        "android_client_info": {
+          "package_name": "com.gocarclean.provider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRg5vEEsgUAg-wzT0FXm7oSWqO66N7VpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:281978045498:android:50c53b76a6bd58612c2103",
+        "android_client_info": {
+          "package_name": "com.gocarclean.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRg5vEEsgUAg-wzT0FXm7oSWqO66N7VpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
