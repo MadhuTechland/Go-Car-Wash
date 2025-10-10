@@ -31,7 +31,7 @@ class AppTheme {
     ),
     cardColor: cardColor,
     appBarTheme: AppBarTheme(systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light, statusBarColor: primaryColor)),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       shape: dialogShape()),
@@ -73,7 +73,7 @@ class AppTheme {
     ),
     dividerColor: dividerDarkColor,
     cardColor: scaffoldSecondaryDark,
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: scaffoldSecondaryDark,
       surfaceTintColor: Colors.transparent,
       shape: dialogShape()),

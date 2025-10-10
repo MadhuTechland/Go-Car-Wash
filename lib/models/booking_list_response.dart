@@ -82,6 +82,7 @@ class BookingData {
   int? providerId;
   int? quantity;
   String? type;
+  String? bookingsType;
   num? discount;
   num? amount;
   String? status;
@@ -90,6 +91,8 @@ class BookingData {
   String? bookingSlot;
   String? providerName;
   String? customerName;
+  String? customersName;
+  String? customerPhone;
   String? serviceName;
   String? paymentStatus;
   String? paymentMethod;
@@ -158,6 +161,8 @@ class BookingData {
     this.customerId,
     this.bookingSlot,
     this.customerName,
+    this.customersName,
+    this.customerPhone,
     this.date,
     this.description,
     this.discount,
@@ -182,6 +187,7 @@ class BookingData {
     this.status,
     this.statusLabel,
     this.type,
+    this.bookingsType,
     this.quantity,
     this.totalCalculatedPrice,
     this.bookingAddressId,
@@ -210,6 +216,8 @@ class BookingData {
       address: json['address'],
       customerId: json['customer_id'],
       customerName: json['customer_name'],
+      customersName: json['customers_name'],
+      customerPhone: json['customer_phone'],
       date: json['date'],
       description: json['description'],
       discount: json['discount'],
@@ -243,6 +251,7 @@ class BookingData {
       statusLabel: json['status_label'],
       quantity: json['quantity'],
       type: json['type'],
+      bookingsType: json['bookings_type'] ?? json['bookings_type'],
       bookingAddressId: json['booking_address_id'],
       totalAmount: json['total_amount'],
       totalReview: json['total_review'],
@@ -269,6 +278,8 @@ class BookingData {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['customer_id'] = this.customerId;
     data['customer_name'] = this.customerName;
+    data['customers_name'] = this.customersName;
+    data['customer_phone'] = this.customerPhone;
     data['date'] = this.date;
     data['discount'] = this.discount;
     data['amount'] = this.amount;
@@ -282,6 +293,7 @@ class BookingData {
     data['status'] = this.status;
     data['status_label'] = this.statusLabel;
     data['type'] = this.type;
+    data['bookings_type'] = this.bookingsType;
     data['address'] = this.address;
     data['description'] = this.description;
     data['duration_diff_hour'] = this.durationDiffHour;

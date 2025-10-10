@@ -39,8 +39,8 @@ class ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
 
   List<Widget> fragmentList = [
     ProviderHomeFragment(),
-    // BookingFragment(),
-    BookingScreen(),
+    BookingFragment(),
+    // BookingScreen(),
     // if (appConfigurationStore.isEnableChat) ChatListScreen(),
     ServiceListScreen(showBackIcon: false),
     ProviderProfileFragment(),
