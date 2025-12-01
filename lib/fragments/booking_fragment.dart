@@ -93,7 +93,7 @@ class BookingFragmentState extends State<BookingFragment>
       dateTo: filterStore.endDate,
       customerId: filterStore.customerId.join(","),
       providerId: filterStore.providerId.join(","),
-      handymanId: filterStore.handymanId.join(","),
+      // handymanId: filterStore.handymanId.join(","),
       bookingStatus: filterStore.bookingStatus.join(","),
       paymentStatus: filterStore.paymentStatus.join(","),
       paymentType: filterStore.paymentType.join(","),
@@ -260,53 +260,54 @@ class BookingFragmentState extends State<BookingFragment>
         }
       },
       children: [
-        Container(
-          margin: EdgeInsets.only(top: 24), // 👈 creates space below
-          padding: EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 8),
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: boxDecorationWithRoundedCorners(
-                  borderRadius: radius(),
-                  backgroundColor:
-                      appStore.isDarkMode ? context.cardColor : cardLightColor,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(languages.totalAmount, style: boldTextStyle())
-                            .expand(),
-                        TextButton(
-                          style: ButtonStyle(
-                            padding: WidgetStatePropertyAll(
-                                EdgeInsets.symmetric(
-                                    vertical: 2, horizontal: 0)),
-                          ),
-                          onPressed: () {
-                            TotalAmountsComponent(
-                              totalEarning: totalEarnings,
-                              paymentBreakdown: paymentBreakdownData,
-                            ).launch(context);
-                          },
-                          child: Text(
-                            languages.viewBreakdown,
-                            style:
-                                boldTextStyle(color: defaultStatus, size: 13),
-                          ),
-                        ).withHeight(25),
-                      ],
-                    ),
-                    PriceWidget(
-                        price: totalEarnings.toDouble(), color: primaryColor),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Container(
+        //   margin: EdgeInsets.only(top: 24), // 👈 creates space below
+        //   padding: EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 8),
+        //   child: Column(
+        //     children: [
+              // Container(
+              //   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              //   decoration: boxDecorationWithRoundedCorners(
+              //     borderRadius: radius(),
+              //     backgroundColor:
+              //         appStore.isDarkMode ? context.cardColor : cardLightColor,
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+                    // Row(
+                    //   children: [
+                    //     Text(languages.totalAmount, style: boldTextStyle())
+                    //         .expand(),
+                    //     TextButton(
+                    //       style: ButtonStyle(
+                    //         padding: WidgetStatePropertyAll(
+                    //             EdgeInsets.symmetric(
+                    //                 vertical: 2, horizontal: 0)),
+                    //       ),
+                    //       onPressed: () {
+                    //         TotalAmountsComponent(
+                    //           totalEarning: totalEarnings,
+                    //           paymentBreakdown: paymentBreakdownData,
+                    //         ).launch(context);
+                    //       },
+                    //       child: Text(
+                    //         languages.viewBreakdown,
+                    //         style:
+                    //             boldTextStyle(color: defaultStatus, size: 13),
+                    //       ),
+                    //     ).withHeight(25),
+                    //   ],
+                    // ),
+                    // PriceWidget(
+                    //     price: totalEarnings.toDouble(), color: primaryColor),
+              //     ],
+              //   ),
+              // ),
+        //     ],
+        //   ),
+        // ),
+        8.height,
         AnimatedListView(
           key: keyForList,
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

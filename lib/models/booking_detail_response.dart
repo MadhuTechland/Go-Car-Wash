@@ -390,3 +390,145 @@ class ServiceAddon {
     };
   }
 }
+
+class Serviceaddon {
+  int id;
+  String name;
+  String serviceAddonImage;
+  int serviceId;
+  num price;
+  int status;
+  String deletedAt;
+  String createdAt;
+  String updatedAt;
+  bool isSelected = false;
+
+  Serviceaddon({
+    this.id = -1,
+    this.name = "",
+    this.serviceAddonImage = "",
+    this.serviceId = -1,
+    this.price = 0,
+    this.status = -1,
+    this.deletedAt = "",
+    this.createdAt = "",
+    this.updatedAt = "",
+  });
+
+  factory Serviceaddon.fromJson(Map<String, dynamic> json) {
+    return Serviceaddon(
+      id: json['id'] is int ? json['id'] : -1,
+      name: json['name'] is String ? json['name'] : "",
+      serviceAddonImage: json['serviceaddon_image'] is String
+          ? json['serviceaddon_image']
+          : "",
+      serviceId: json['service_id'] is int ? json['service_id'] : -1,
+      price: json['price'] is num ? json['price'] : 0,
+      status: json['status'] is int ? json['status'] : -1,
+      deletedAt: json['deleted_at'] is String ? json['created_at'] : "",
+      createdAt: json['created_at'] is String ? json['created_at'] : "",
+      updatedAt: json['updated_at'] is String ? json['updated_at'] : "",
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'serviceaddon_image': serviceAddonImage,
+      'service_id': serviceId,
+      'price': price,
+      'status': status,
+      'deleted_at': deletedAt,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'Serviceaddon(id: $id, name: $name, price: $price)';
+  }
+}
+
+class ExtraVehicle {
+  int? id;
+  int? bookingId;
+  int? serviceId;
+  String? serviceName;   // 👈 new
+  List<String>? serviceImages;  // 👈 new
+  int? servicePlanId;
+  String? planName;      // 👈 new
+  int? quantity;
+  num? price;
+  String? status;
+  String? createdAt;
+  String? updatedAt;
+
+  ExtraVehicle({
+    this.id,
+    this.bookingId,
+    this.serviceId,
+    this.serviceName,
+    this.serviceImages,
+    this.servicePlanId,
+    this.planName,
+    this.quantity,
+    this.price,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory ExtraVehicle.fromJson(Map<String, dynamic> json) {
+    return ExtraVehicle(
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()),
+      bookingId: json['booking_id'] is int
+          ? json['booking_id']
+          : int.tryParse(json['booking_id'].toString()),
+      serviceId: json['service_id'] is int
+          ? json['service_id']
+          : int.tryParse(json['service_id'].toString()),
+
+      // 👇 parse new fields safely
+      serviceName: json['service_name']?.toString(),
+      serviceImages: json['service_images'] != null
+          ? List<String>.from(json['service_images'])
+          : [],
+
+      servicePlanId: json['service_plan_id'] is int
+          ? json['service_plan_id']
+          : int.tryParse(json['service_plan_id'].toString()),
+      planName: json['plan_name']?.toString(),
+
+      quantity: json['quantity'] is int
+          ? json['quantity']
+          : int.tryParse(json['quantity'].toString()),
+
+      price: json['price'] is num
+          ? json['price']
+          : num.tryParse(json['price'].toString()),
+
+      status: json['status']?.toString(),
+      createdAt: json['created_at']?.toString(),
+      updatedAt: json['updated_at']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'booking_id': bookingId,
+      'service_id': serviceId,
+      'service_name': serviceName,
+      'service_image': serviceImages,
+      'service_plan_id': servicePlanId,
+      'plan_name': planName,
+      'quantity': quantity,
+      'price': price,
+      'status': status,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+    };
+  }
+}

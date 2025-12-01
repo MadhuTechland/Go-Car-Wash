@@ -129,12 +129,12 @@ class _ProviderHomeFragmentState extends State<ProviderHomeFragment> {
                     TodayCashComponent(totalCashInHand: snap.data!.totalCashInHand.validate()),
                     TotalComponent(snap: snap.data!),
                     ChartComponent(),
-                    HandymanRecentlyOnlineComponent(images: snap.data!.onlineHandyman.validate()),
-                    HandymanListComponent(
-                      list: snap.data!.handyman.validate(),
-                      totalActiveHandyman: snap.data!.totalActiveHandyman.validate(),
-                      onRefresh: init,
-                    ),
+                    // HandymanRecentlyOnlineComponent(images: snap.data!.onlineHandyman.validate()),
+                    // HandymanListComponent(
+                    //   list: snap.data!.handyman.validate(),
+                    //   totalActiveHandyman: snap.data!.totalActiveHandyman.validate(),
+                    //   onRefresh: init,
+                    // ),
                     UpcomingBookingComponent(bookingData: snap.data!.upcomingBookings.validate()),
                     JobListComponent(list: snap.data!.myPostJobData.validate()).paddingOnly(left: 16, right: 16, top: 8).visible(rolesAndPermissionStore.postJobList),
                     ServiceListComponent(list: snap.data!.service.validate()).visible(rolesAndPermissionStore.serviceList),

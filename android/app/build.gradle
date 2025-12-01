@@ -52,8 +52,8 @@ android {
         applicationId "com.gocarclean.provider"
         minSdkVersion 23
         targetSdkVersion 35
-        versionCode 95
-        versionName '11.13.3'
+        versionCode 1
+        versionName '1.0.0'
     }
 
     signingConfigs {

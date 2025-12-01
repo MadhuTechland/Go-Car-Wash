@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:handyman_provider_flutter/components/base_scaffold_widget.dart';
 import 'package:handyman_provider_flutter/components/cached_image_widget.dart';
 import 'package:handyman_provider_flutter/components/price_widget.dart';
 import 'package:handyman_provider_flutter/main.dart';
+import 'package:handyman_provider_flutter/models/booking_detail_response.dart';
 import 'package:handyman_provider_flutter/models/booking_list_response.dart';
 import 'package:handyman_provider_flutter/networks/rest_apis.dart';
 import 'package:handyman_provider_flutter/provider/components/assign_handyman_screen.dart';
@@ -15,6 +19,7 @@ import 'package:handyman_provider_flutter/utils/extensions/string_extension.dart
 import 'package:handyman_provider_flutter/utils/images.dart';
 import 'package:handyman_provider_flutter/utils/model_keys.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../models/user_data.dart';
 import 'dotted_line.dart';
@@ -157,12 +162,58 @@ Widget build(BuildContext context) {
         buildDetailRow("Customer Mobile", widget.bookingData.customerPhone.validate()),
         if(widget.bookingData.bookingsType != 'instant')
         buildDetailRow("Plan", widget.bookingData.plan != null ? widget.bookingData.plan!.amount.validate() : 'No Plan'),
-        buildDetailRow("Wash Type", '${widget.bookingData.bookingsType.validate()} Wash'), 
-        buildDetailRow("Location Type", widget.bookingData!.bookingAt), // adjust
-        buildDetailRow("Addons", "widget.bookingData.subTotal.toString()"), 
-        buildDetailRow("Preferences", widget.bookingData.description.validate()), // adjust
+        buildDetailRow("Wash Type", widget.bookingData.bookingsType == "instant" ? "Instant Wash" : widget.bookingData.bookingsType == "daily"
+                      ? "Daily Wash" : widget.bookingData.bookingsType.validate(), ),
+        buildDetailRow(
+              "Location Type",
+              widget.bookingData!.bookingAt == "home"
+                  ? "At Home"
+                  : widget.bookingData!.bookingAt == "shed"
+                      ? "At Shed"
+                      : "At Home", // fallback if null/other
+            ), // adjust
+        if (widget.bookingData.serviceaddon != null &&
+                widget.bookingData.serviceaddon!.isNotEmpty)
+              _buildRow(
+                "Addons",
+                "",
+                rightWidget: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AddonsScreen(addons: widget.bookingData.serviceaddon ?? []),
+                      ),
+                    );
+                  },
+                  child: Text("View More",
+                      style: TextStyle(color: context.primaryColor)),
+                ),
+              ), 
+              if (widget.bookingData.extraVehicles != null &&
+                widget.bookingData.extraVehicles!.isNotEmpty)
+              _buildRow(
+                "Extra Vehicles",
+                "",
+                rightWidget: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ExtraVehiclesScreen(
+                            vehicles: widget.bookingData.extraVehicles!),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    "View More",
+                    style: TextStyle(color: context.primaryColor),
+                  ),
+                ),
+              ),
         buildDetailRow(languages.paymentStatus,
-            buildPaymentStatusWithMethod(widget.bookingData.paymentStatus.validate(), widget.bookingData.paymentMethod.validate())),
+        buildPaymentStatusWithMethod(widget.bookingData.paymentStatus.validate(), widget.bookingData.paymentMethod.validate())),
         20.height,
         /// Accept & Decline buttons
         if (isUserTypeProvider && widget.bookingData.status == BookingStatusKeys.pending || (isUserTypeHandyman && widget.bookingData.status == BookingStatusKeys.accept))
@@ -308,6 +359,314 @@ Widget buildDetailRow(String label, String? value) {
       ],
     ),
   );
+}
+
+Widget _buildRow(
+    String title,
+    String value, {
+    bool bold = false,
+    Widget? rightWidget,
+    bool highlite = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, right: 0),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: secondaryTextStyle(),
+          ),
+          const SizedBox(width: 12),
+          // Case 1: if rightWidget exists → show it at far right
+          if (rightWidget != null) ...[
+            const Spacer(), // pushes widget to the end
+            rightWidget,
+          ] else
+            // Case 2: fallback → show value at far right
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                  color: highlite ? Colors.green : Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.right,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class AddonsScreen extends StatelessWidget {
+  final List<ServiceAddon> addons;
+
+  const AddonsScreen({Key? key, required this.addons}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      appBarTitle: "Service Addons", // same as your first example
+      body: ListView.builder(
+        itemCount: addons.length,
+        itemBuilder: (context, index) {
+          final addon = addons[index];
+          return Card(
+            margin: const EdgeInsets.all(8),
+            elevation: 3,
+            color: context.cardColor,
+            child: Row(
+              children: [
+                // Left half - image
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: addon.serviceAddonImage.isNotEmpty
+                          ? Image.network(
+                              addon.serviceAddonImage,
+                              height: 120,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              height: 120,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.extension, size: 40),
+                            ),
+                    ),
+                  ),
+                ),
+
+                // Right half - details
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          addon.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: context.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Price: ₹${addon.price}",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: context.accentColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+class ExtraVehiclesScreen extends StatefulWidget {
+  final List<ExtraVehicle> vehicles;
+
+  const ExtraVehiclesScreen({Key? key, required this.vehicles}) : super(key: key);
+
+  @override
+  _ExtraVehiclesScreenState createState() => _ExtraVehiclesScreenState();
+}
+
+class _ExtraVehiclesScreenState extends State<ExtraVehiclesScreen> {
+  final Map<int, PageController> _controllers = {};
+  final Map<int, int> _currentPage = {};
+  late Future<List<ExtraVehicle>> future;
+
+  @override
+  void initState() {
+    super.initState();
+    future = _loadVehicles(); // mock async load
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startAutoScroll());
+  }
+
+  Future<List<ExtraVehicle>> _loadVehicles() async {
+    // You can replace this with an actual API call if needed
+    await Future.delayed(const Duration(milliseconds: 500));
+    return widget.vehicles;
+  }
+
+  void _startAutoScroll() {
+    widget.vehicles.asMap().forEach((index, vehicle) {
+      if (vehicle.serviceImages != null && vehicle.serviceImages!.length > 1) {
+        Timer.periodic(const Duration(seconds: 3), (timer) {
+          final controller = _controllers[index];
+          if (controller != null && controller.hasClients) {
+            int nextPage = (_currentPage[index] ?? 0) + 1;
+            if (nextPage >= vehicle.serviceImages!.length) nextPage = 0;
+            controller.animateToPage(
+              nextPage,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+            _currentPage[index] = nextPage;
+          } else {
+            timer.cancel();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controllers.forEach((key, controller) => controller.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<ExtraVehicle>>(
+      future: future,
+      builder: (context, snapshot) {
+        final vehicles = snapshot.data ?? [];
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            setState(() {
+              future = _loadVehicles(); // reload data
+            });
+            await Future.delayed(const Duration(seconds: 2));
+          },
+          child: AppScaffold(
+            appBarTitle: "Extra Vehicles",
+            body: vehicles.isEmpty
+                ? const Center(child: Text("No vehicles available"))
+                : ListView.builder(
+                    itemCount: vehicles.length,
+                    itemBuilder: (context, index) {
+                      final vehicle = vehicles[index];
+                      final controller = PageController(viewportFraction: 1.0);
+                      _controllers[index] = controller;
+
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        elevation: 3,
+                        color: context.cardColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              // Left - Carousel
+                              Expanded(
+                                flex: 5,
+                                child: vehicle.serviceImages != null &&
+                                        vehicle.serviceImages!.isNotEmpty
+                                    ? Column(
+                                        children: [
+                                          SizedBox(
+                                            height: 120,
+                                            child: PageView.builder(
+                                              controller: controller,
+                                              itemCount:
+                                                  vehicle.serviceImages!.length,
+                                              itemBuilder: (context, i) {
+                                                return ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Image.network(
+                                                    vehicle.serviceImages![i],
+                                                    fit: BoxFit.cover,
+                                                    width: double.infinity,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          SmoothPageIndicator(
+                                            controller: controller,
+                                            count:
+                                                vehicle.serviceImages!.length,
+                                            effect: WormEffect(
+                                              dotWidth: 8,
+                                              dotHeight: 8,
+                                              spacing: 4,
+                                              activeDotColor:
+                                                  context.primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : Container(
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300],
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(Icons.directions_car,
+                                            size: 40),
+                                      ),
+                              ),
+
+                              const SizedBox(width: 12),
+
+                              // Right - Details
+                              Expanded(
+                                flex: 5,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      vehicle.serviceName ?? "Unknown Vehicle",
+                                      style: boldTextStyle(
+                                        size: 16,
+                                        color: context.primaryColor,
+                                      ),
+                                    ),
+                                    8.height,
+                                    Text(
+                                      "Plan: ${vehicle.planName ?? "N/A"}",
+                                      style: primaryTextStyle(),
+                                    ),
+                                    Text(
+                                      "Quantity: ${vehicle.quantity}",
+                                      style: primaryTextStyle(),
+                                    ),
+                                    Text(
+                                      "Price: ₹${vehicle.price}",
+                                      style: primaryTextStyle(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 
@@ -798,4 +1157,4 @@ Widget buildDetailRow(String label, String? value) {
   //     splashColor: Colors.transparent,
   //   );
   // }
-}
+// }

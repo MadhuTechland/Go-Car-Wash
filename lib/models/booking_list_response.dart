@@ -182,6 +182,7 @@ class BookingData {
       extraCharges.validate().sumByDouble((e) => e.total.validate());
 
   List<ServiceAddon>? serviceaddon;
+  List<ExtraVehicle>? extraVehicles;
 
   BookingData({
     this.address,
@@ -237,6 +238,7 @@ class BookingData {
     this.finalDiscountAmount,
     this.finalCouponDiscountAmount,
     this.serviceaddon,
+    this.extraVehicles,
     this.txnId,
     this.plan,
   });
@@ -319,6 +321,11 @@ class BookingData {
               .map((i) => ServiceAddon.fromJson(i))
               .toList()
           : null,
+      extraVehicles: json['BookingExtraVehicles'] != null
+          ? (json['BookingExtraVehicles'] as List)
+              .map((i) => ExtraVehicle.fromJson(i))
+              .toList()
+          : null,
       txnId: json['txn_id'],
       plan: json['plan'] != null ? PlanModel.fromJson(json['plan']) : null,
     );
@@ -395,6 +402,10 @@ class BookingData {
     if (this.serviceaddon != null) {
       data['BookingAddonService'] =
           this.serviceaddon!.map((v) => v.toJson()).toList();
+    }
+    if (extraVehicles != null) {
+      data['BookingExtraVehicles'] =
+          extraVehicles!.map((v) => v.toJson()).toList();
     }
     data['txn_id'] = this.txnId;
     if (plan != null) {

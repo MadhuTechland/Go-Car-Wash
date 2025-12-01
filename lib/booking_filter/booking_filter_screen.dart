@@ -33,7 +33,6 @@ class _BookingFilterScreenState extends State<BookingFilterScreen> {
     DATE_RANGE,
     CUSTOMER,
     if (appStore.userType != USER_TYPE_HANDYMAN) PROVIDER.toLowerCase(),
-    if (appStore.userType != USER_TYPE_HANDYMAN || appStore.userType != USER_TYPE_PROVIDER) HANDYMAN.toLowerCase(),
     BOOKING_STATUS,
     PAYMENT_TYPE,
     PAYMENT_STATUS,
@@ -202,8 +201,8 @@ class _BookingFilterScreenState extends State<BookingFilterScreen> {
                       return FilterCustomerListComponent();
                     } else if (e == PROVIDER.toLowerCase()) {
                       return FilterProviderListComponent();
-                    } else if (e == HANDYMAN.toLowerCase()) {
-                      return FilterHandymanListComponent();
+                    // } else if (e == HANDYMAN.toLowerCase()) {
+                    //   return FilterHandymanListComponent();
                     } else if (e == BOOKING_STATUS) {
                       return FilterBookingStatusComponent(bookingStatusList: bookingStatusList);
                     } else if (e == PAYMENT_TYPE) {

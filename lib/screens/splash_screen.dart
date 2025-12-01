@@ -58,10 +58,13 @@ class SplashScreenState extends State<SplashScreen> {
               defaultValue: DEFAULT_LANGUAGE),
           context: context);
       int themeModeIndex =
-          getIntAsync(THEME_MODE_INDEX, defaultValue: THEME_MODE_SYSTEM);
-      if (themeModeIndex == THEME_MODE_SYSTEM) {
-        appStore.setDarkMode(
-            MediaQuery.of(context).platformBrightness == Brightness.dark);
+          getIntAsync(THEME_MODE_INDEX, defaultValue: THEME_MODE_DARK);
+      if (themeModeIndex == THEME_MODE_DARK) {
+        // appStore.setDarkMode(
+        //     MediaQuery.of(context).platformBrightness == Brightness.dark);
+        appStore.setDarkMode(true);
+        defaultToastBackgroundColor = Colors.white;
+        defaultToastTextColor = Colors.black;
       }
 
       if (appConfigurationStore.maintenanceModeStatus) {

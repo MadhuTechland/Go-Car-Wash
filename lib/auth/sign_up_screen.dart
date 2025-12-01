@@ -5,12 +5,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:handyman_provider_flutter/auth/sign_in_screen.dart';
 import 'package:handyman_provider_flutter/components/app_widgets.dart';
 import 'package:handyman_provider_flutter/components/selected_item_widget.dart';
 import 'package:handyman_provider_flutter/main.dart';
 import 'package:handyman_provider_flutter/models/user_type_response.dart';
 import 'package:handyman_provider_flutter/networks/rest_apis.dart';
+import 'package:handyman_provider_flutter/provider/services/map_screen.dart';
 import 'package:handyman_provider_flutter/utils/common.dart';
 import 'package:handyman_provider_flutter/utils/configs.dart';
 import 'package:handyman_provider_flutter/utils/constant.dart';
@@ -46,6 +49,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController mobileCont = TextEditingController();
   TextEditingController passwordCont = TextEditingController();
   TextEditingController designationCont = TextEditingController();
+  TextEditingController latitudeCont = TextEditingController();
+  TextEditingController longitudeCont = TextEditingController();
+  TextEditingController locationController = TextEditingController();
 
   /// FocusNodes
   FocusNode fNameFocus = FocusNode();
@@ -57,9 +63,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   FocusNode typeFocus = FocusNode();
   FocusNode passwordFocus = FocusNode();
   FocusNode designationFocus = FocusNode();
+  FocusNode latitudeFocus = FocusNode();
+  FocusNode longitudeFocus = FocusNode();
 
   String? selectedUserTypeValue;
   String? selectedProviderType;
+  double? lat;
+  double? long;
 
   List<UserTypeData> commissionTypeList = [
     UserTypeData(name: languages.lblSelectCommission, id: -1)
@@ -102,7 +112,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     mobileCont.dispose();
     passwordCont.dispose();
     designationCont.dispose();
-
+    latitudeCont.dispose();
+    longitudeCont.dispose();
+    locationController.dispose();
     fNameFocus.dispose();
     lNameFocus.dispose();
     emailFocus.dispose();
@@ -112,6 +124,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     typeFocus.dispose();
     passwordFocus.dispose();
     designationFocus.dispose();
+    latitudeFocus.dispose();
+    longitudeFocus.dispose();
   }
 
   //----------------------------------- UI -----------------------------------//
@@ -506,6 +520,97 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
         16.height,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppTextField(
+              controller: locationController,
+              textFieldType: TextFieldType.NAME,
+              readOnly: true,
+              decoration: inputDecoration(
+                context,
+                fillColor: context.scaffoldBackgroundColor,
+                hint: "Address",
+              ),
+              validator: (val) => val!.isEmpty ? languages.hintRequired : null,
+            ),
+            8.height,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  // 📍 Current Location
+                  TextButton.icon(
+                    icon: const Icon(Icons.my_location, color: primaryColor),
+                    label: const Text("Current Location",
+                        style: TextStyle(color: primaryColor, fontSize: 12)),
+                    onPressed: () async {
+                      bool serviceEnabled =
+                          await Geolocator.isLocationServiceEnabled();
+                      if (!serviceEnabled) {
+                        await Geolocator.openLocationSettings();
+                        return;
+                      }
+
+                      LocationPermission permission =
+                          await Geolocator.checkPermission();
+                      if (permission == LocationPermission.denied ||
+                          permission == LocationPermission.deniedForever) {
+                        permission = await Geolocator.requestPermission();
+                      }
+
+                      Position position = await Geolocator.getCurrentPosition(
+                        desiredAccuracy: LocationAccuracy.high,
+                      );
+
+                      List<Placemark> placemarks =
+                          await placemarkFromCoordinates(
+                              position.latitude, position.longitude);
+
+                      if (placemarks.isNotEmpty) {
+                        Placemark p = placemarks.first;
+
+                        String address =
+                            "${p.name}, ${p.locality}, ${p.administrativeArea}, ${p.country}";
+
+                        locationController.text = address;
+
+                        setState(() {
+                          latitudeCont.text = position.latitude.toString();
+                          longitudeCont.text = position.longitude.toString();
+                        });
+                      }
+                    },
+                  ),
+
+                  // 🗺 Choose From Map
+                  TextButton.icon(
+                    icon: const Icon(Icons.map, color: primaryColor),
+                    label: const Text("Choose from Maps",
+                        style: TextStyle(color: primaryColor, fontSize: 12)),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MapScreen()),
+                      );
+
+                      if (result != null) {
+                        locationController.text = result["address"];
+
+                        setState(() {
+                          latitudeCont.text = result["latitude"].toString();
+                          longitudeCont.text = result["longitude"].toString();
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        16.height,
         // Password text field...
         AppTextField(
           textFieldType: TextFieldType.PASSWORD,
@@ -708,6 +813,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           UserKeys.designation: designationCont.text.trim(),
           UserKeys.status: 0,
           UserKeys.provideType: selectedProviderType,
+          UserKeys.latitude: latitudeCont.text.trim(),
+          UserKeys.longitude: longitudeCont.text.trim(),
         };
         print(request);
         if (selectedProvider != null) {

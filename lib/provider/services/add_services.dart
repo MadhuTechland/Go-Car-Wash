@@ -462,99 +462,100 @@ class _AddServicesState extends State<AddServices> {
 
 
              Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppTextField(
-                  controller: locationController,
-                  textFieldType: TextFieldType.NAME,
-                  readOnly: true,
-                  decoration: inputDecoration(context,
-                      fillColor: context.scaffoldBackgroundColor,
-                      hint: "Address"),
-                  validator: (val) =>
-                      val!.isEmpty ? languages.hintRequired : null,
-                ),
-                8.height,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton.icon(
-                      icon: const Icon(Icons.my_location, color: primaryColor),
-                      label: const Text("Current Location",
-                          style: TextStyle(color: primaryColor)),
-                      onPressed: () async {
-                        bool serviceEnabled =
-                            await Geolocator.isLocationServiceEnabled();
-                        if (!serviceEnabled) {
-                          await Geolocator.openLocationSettings();
-                          return;
-                        }
-                        LocationPermission permission =
-                            await Geolocator.checkPermission();
-                        if (permission == LocationPermission.denied ||
-                            permission == LocationPermission.deniedForever) {
-                          permission = await Geolocator.requestPermission();
-                        }
-                        if (permission == LocationPermission.denied ||
-                            permission == LocationPermission.deniedForever) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text("Location permission is required")));
-                          return;
-                        }
-
-                        Position position = await Geolocator.getCurrentPosition(
-                            desiredAccuracy: LocationAccuracy.high);
-
-                        List<Placemark> placemarks =
-                            await placemarkFromCoordinates(
-                                position.latitude, position.longitude);
-                        if (placemarks.isNotEmpty) {
-                          Placemark p = placemarks.first;
-                          String address =
-                              "${p.name}, ${p.locality}, ${p.administrativeArea}, ${p.country}";
-                          locationController.text = address;
-                          print(
-                              "Lat: ${position.latitude}, Lng: ${position.longitude}");
-                          double latitude = position.latitude;
-                          double longitude = position.longitude;
-                          setState(() {
-                            lat = latitude;
-                            long = longitude;
-                          });
-                        }
-                      },
-                    ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.map, color: primaryColor),
-                      label: const Text("Choose from Maps",
-                          style: TextStyle(color: primaryColor)),
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const MapScreen()),
-                        );
-                        if (result != null) {
-                          locationController.text = result["address"];
-                          print(
-                              "Lat: ${result["latitude"]}, Lng: ${result["longitude"]}");
-                          double latitude = result["latitude"];
-                          double longitude = result["longitude"];
-                          setState(() {
-                            lat = latitude;
-                            long = longitude;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    AppTextField(
+      controller: locationController,
+      textFieldType: TextFieldType.NAME,
+      readOnly: true,
+      decoration: inputDecoration(
+        context,
+        fillColor: context.scaffoldBackgroundColor,
+        hint: "Address",
+      ),
+      validator: (val) => val!.isEmpty ? languages.hintRequired : null,
+    ),
+    8.height,
+    // ✅ Wrap Row in SingleChildScrollView to prevent overflow
+    SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextButton.icon(
+            icon: const Icon(Icons.my_location, color: primaryColor),
+            label: const Text(
+              "Current Location",
+              style: TextStyle(color: primaryColor),
             ),
+            onPressed: () async {
+              bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+              if (!serviceEnabled) {
+                await Geolocator.openLocationSettings();
+                return;
+              }
+              LocationPermission permission =
+                  await Geolocator.checkPermission();
+              if (permission == LocationPermission.denied ||
+                  permission == LocationPermission.deniedForever) {
+                permission = await Geolocator.requestPermission();
+              }
+              if (permission == LocationPermission.denied ||
+                  permission == LocationPermission.deniedForever) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text("Location permission is required")));
+                return;
+              }
 
+              Position position = await Geolocator.getCurrentPosition(
+                  desiredAccuracy: LocationAccuracy.high);
 
-
+              List<Placemark> placemarks = await placemarkFromCoordinates(
+                  position.latitude, position.longitude);
+              if (placemarks.isNotEmpty) {
+                Placemark p = placemarks.first;
+                String address =
+                    "${p.name}, ${p.locality}, ${p.administrativeArea}, ${p.country}";
+                locationController.text = address;
+                print("Lat: ${position.latitude}, Lng: ${position.longitude}");
+                double latitude = position.latitude;
+                double longitude = position.longitude;
+                setState(() {
+                  lat = latitude;
+                  long = longitude;
+                });
+              }
+            },
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.map, color: primaryColor),
+            label: const Text(
+              "Choose from Maps",
+              style: TextStyle(color: primaryColor),
+            ),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MapScreen()),
+              );
+              if (result != null) {
+                locationController.text = result["address"];
+                print(
+                    "Lat: ${result["latitude"]}, Lng: ${result["longitude"]}");
+                double latitude = result["latitude"];
+                double longitude = result["longitude"];
+                setState(() {
+                  lat = latitude;
+                  long = longitude;
+                });
+              }
+            },
+          ),
+        ],
+      ),
+    ),
+  ],
+),
 
             Row(
               children: [

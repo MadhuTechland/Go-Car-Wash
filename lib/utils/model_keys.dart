@@ -44,6 +44,8 @@ class UserKeys {
   static String whyChooseTitle = 'title';
   static String isDefault = 'is_default';
   static String provideType = 'provider_users';
+  static String latitude = 'latitude';
+  static String longitude = 'longitude';
 }
 
 class BookingServiceKeys {
@@ -67,9 +69,9 @@ class BookingStatusKeys {
   static String all = BOOKING_PAYMENT_STATUS_ALL;
   static String paid = BOOKING_STATUS_PAID;
   static String pendingApproval = BOOKING_STATUS_PENDING_APPROVAL;
-  static String waitingAdvancedPayment = BOOKING_STATUS_WAITING_ADVANCED_PAYMENT;
+  static String waitingAdvancedPayment =
+      BOOKING_STATUS_WAITING_ADVANCED_PAYMENT;
 }
-
 
 class AddSubscriptionDetailsKey {
   static String userId = 'user_id';
@@ -244,7 +246,6 @@ class HelpDeskKey {
   static String attachmentCount = 'attachment_count';
 }
 
-
 class CommissionKey {
   static String id = "id";
   static String name = "name";
@@ -269,7 +270,6 @@ class PromotionalBannerKey {
   static String bannerAttachment = 'banner_attachment_';
   static String attachmentCount = 'attachment_count';
 }
-
 
 class ServiceRequestKey {
   static String serviceId = 'id';

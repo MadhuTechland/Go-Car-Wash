@@ -29,6 +29,7 @@ import 'package:handyman_provider_flutter/store/roles_and_permission_store.dart'
 import 'package:handyman_provider_flutter/utils/common.dart';
 import 'package:handyman_provider_flutter/utils/configs.dart';
 import 'package:handyman_provider_flutter/utils/constant.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'app_theme.dart';
 import 'helpDesk/model/help_desk_response.dart';
@@ -138,12 +139,13 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    checkForUpdate();
     init();
   }
 
   void init() async {
     afterBuildCreated(() {
-      int val = getIntAsync(THEME_MODE_INDEX, defaultValue: THEME_MODE_SYSTEM);
+      int val = getIntAsync(THEME_MODE_INDEX, defaultValue: THEME_MODE_DARK);
       if (val == THEME_MODE_LIGHT) {
         appStore.setDarkMode(true);
       } else if (val == THEME_MODE_DARK) {
@@ -162,6 +164,34 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
+  void checkForUpdate() async {
+  try {
+    AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+
+    if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+      // Show dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: Text("New Update Available"),
+          content: Text("A new version of the app is available. Please update to continue."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                InAppUpdate.performImmediateUpdate();
+              },
+              child: Text("Update"),
+            ),
+          ],
+        ),
+      );
+    }
+  } catch (e) {
+    print("Update Check Error: $e");
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return RestartAppWidget(
@@ -171,7 +201,7 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           home: SplashScreen(),
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.darkTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: appStore.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           supportedLocales: LanguageDataModel.languageLocales(),

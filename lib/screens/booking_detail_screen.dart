@@ -33,6 +33,7 @@ import 'package:handyman_provider_flutter/provider/handyman_info_screen.dart';
 import 'package:handyman_provider_flutter/provider/services/service_detail_screen.dart';
 import 'package:handyman_provider_flutter/screens/cash_management/component/cash_confirm_dialog.dart';
 import 'package:handyman_provider_flutter/screens/cash_management/view/cash_payment_history_screen.dart';
+import 'package:handyman_provider_flutter/screens/daily_report_screen.dart';
 import 'package:handyman_provider_flutter/screens/extra_charges/add_extra_charges_screen.dart';
 import 'package:handyman_provider_flutter/screens/rating_view_all_screen.dart';
 import 'package:handyman_provider_flutter/screens/track_location.dart';
@@ -1693,8 +1694,7 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
 
                   /// Price Detail Card
                   if (res.data!.bookingDetail != null &&
-                      !res.data!.bookingDetail!.isFreeService &&
-                      res!.data!.bookingDetail!.bookingsType != 'daily')
+                      !res.data!.bookingDetail!.isFreeService)
                     PriceCommonWidget(
                       bookingDetail: res.data!.bookingDetail!,
                       serviceDetail: res.data!.service!,
@@ -1707,6 +1707,48 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
                               ? res.data!.bookingDetail!.bookingPackage
                               : null,
                     ).paddingOnly(bottom: 16, left: 16, right: 16),
+
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Visibility(
+                      visible: res.data!.bookingDetail!.bookingsType ==
+                              "daily" &&
+                          (res.data!.bookingDetail!.status ==
+                                  BookingStatusKeys.accept ||
+                              res.data!.bookingDetail!.status ==
+                                  BookingStatusKeys.onGoing ||
+                              res.data!.bookingDetail!.status ==
+                                  BookingStatusKeys.waitingAdvancedPayment ||
+                              res.data!.bookingDetail!.status ==
+                                  BookingStatusKeys.inProgress),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.primaryColor,
+                          minimumSize: Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DailyReportScreen(
+                                bookingId:
+                                    res.data!.bookingDetail!.id.toString(),
+                                serviceId: res.data!.service!.id.toString(),
+                                servicePlanId: res.data!.bookingDetail!.plan!.id
+                                    .toString(),
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'View Daily Reports',
+                          style: boldTextStyle(color: white),
+                        ),
+                      ),
+                    ),
+                  ),
 
                   /// Extra Charges
                   if (res.data!.bookingDetail!.extraCharges
