@@ -16,6 +16,9 @@ class DailyReportController extends ChangeNotifier {
   int daysRemaining = 0;
   String remainingText = '';
   String todayStatus = '';
+  int washType = 0;
+  int internalCleaning = 0;
+  InternalCleaningSchedule? internalCleaningSchedule;
 
   Future<void> fetchDailyReports(String bookingId) async {
     try {
@@ -31,6 +34,9 @@ class DailyReportController extends ChangeNotifier {
       remainingText = reportResponse.remainingText;
       reports = reportResponse.reports;
       todayStatus = reportResponse.todayStatus;
+      washType = reportResponse.washType;
+      internalCleaning = reportResponse.internalCleaning;
+      internalCleaningSchedule = reportResponse.internalCleaningSchedule;
     } catch (e) {
       debugPrint('Error fetching reports: $e');
     } finally {

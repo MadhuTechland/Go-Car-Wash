@@ -39,7 +39,6 @@ class SplashScreenState extends State<SplashScreen> {
     // Sync new configurations when app is open
     await setValue(LAST_APP_CONFIGURATION_SYNCED_TIME, 0);
 
-    
     ///Set app configurations
     await getAppConfigurations().then((value) {}).catchError((e) async {
       if (!await isNetworkAvailable()) {
@@ -71,11 +70,11 @@ class SplashScreenState extends State<SplashScreen> {
         MaintenanceModeScreen()
             .launch(context, pageRouteAnimation: PageRouteAnimation.Fade);
       } else {
-      // Check if the user is unauthorized and logged in, then clear preferences and cached data.
-      // This condition occurs when the user is marked as inactive from the admin panel,
-      if (!appConfigurationStore.isUserAuthorized && appStore.isLoggedIn) {
-        await clearPreferences();
-      }
+        // Check if the user is unauthorized and logged in, then clear preferences and cached data.
+        // This condition occurs when the user is marked as inactive from the admin panel,
+        if (!appConfigurationStore.isUserAuthorized && appStore.isLoggedIn) {
+          await clearPreferences();
+        }
         if (!appStore.isLoggedIn) {
           SignInScreen().launch(context,
               isNewTask: true, pageRouteAnimation: PageRouteAnimation.Fade);
@@ -98,7 +97,7 @@ class SplashScreenState extends State<SplashScreen> {
   }
 
   updateProfilePhoto() async {
-     getUserDetail(appStore.userId).then((value) async {
+    getUserDetail(appStore.userId).then((value) async {
       await appStore.setUserProfile(value.data!.profileImage.validate());
     });
   }
@@ -116,42 +115,32 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            appStore.isDarkMode ? splash_background : splash_background,
-            height: context.height(),
-            width: context.width(),
-            fit: BoxFit.cover,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(appLogo, height: 250, width: 250),
-              32.height,
-              // Text(APP_NAME,
-              //     style: boldTextStyle(
-              //         size: 26,
-              //         color: appStore.isDarkMode ? Colors.white : Colors.black),
-              //     textAlign: TextAlign.center),
-              // 16.height,
-              if (appNotSynced)
-                Observer(
-                  builder: (_) => appStore.isLoading
-                      ? LoaderWidget().center()
-                      : TextButton(
-                          child: Text(languages.reload, style: boldTextStyle()),
-                          onPressed: () {
-                            appStore.setLoading(true);
-                            init();
-                          },
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(appLogo, height: 250, width: 250),
+            32.height,
+            if (appNotSynced)
+              Observer(
+                builder: (_) => appStore.isLoading
+                    ? LoaderWidget().center()
+                    : TextButton(
+                        child: Text(
+                          languages.reload,
+                          style: boldTextStyle(
+                              color: Colors.white),
                         ),
-                ),
-            ],
-          ),
-        ],
+                        onPressed: () {
+                          appStore.setLoading(true);
+                          init();
+                        },
+                      ),
+              ),
+          ],
+        ),
       ),
     );
   }

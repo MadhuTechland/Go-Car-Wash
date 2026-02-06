@@ -99,7 +99,6 @@ List<HelpDeskListData>? cachedHelpDeskListData;
 List<PromotionalBannerListData>? cachedPromotionalBannerListData;
 List<ServiceData>? cachedServiceData;
 List<UserData>? cachedUserData;
-
 //endregion
 
 void main() async {
@@ -134,7 +133,6 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 }
-
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
@@ -197,7 +195,7 @@ class _MyAppState extends State<MyApp> {
     return RestartAppWidget(
       child: Observer(
         builder: (_) => MaterialApp(
-         
+
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           home: SplashScreen(),

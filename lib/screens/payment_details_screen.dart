@@ -140,20 +140,22 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
           toast("Flutterwave Paid: ${p0['transaction_id']}");
         },
       );
-    } else if (selected.type == PAYMENT_METHOD_PAYSTACK) {
-      PayStackService()
-          .init(
-            context: context,
-            currentPaymentMethod: selected,
-            totalAmount: widget.totalAmount!,
-            loderOnOFF: (p) => appStore.setLoading(p),
-            bookingId: widget.id.validate(),
-            onComplete: (res) {
-              toast("Paystack Paid: ${res["transaction_id"]}");
-            },
-          )
-          .then((_) => PayStackService().checkout());
-    } else {
+    }
+    //  else if (selected.type == PAYMENT_METHOD_PAYSTACK) {
+    //   PayStackService()
+    //       .init(
+    //         context: context,
+    //         currentPaymentMethod: selected,
+    //         totalAmount: widget.totalAmount!,
+    //         loderOnOFF: (p) => appStore.setLoading(p),
+    //         bookingId: widget.id.validate(),
+    //         onComplete: (res) {
+    //           toast("Paystack Paid: ${res["transaction_id"]}");
+    //         },
+    //       )
+    //       .then((_) => PayStackService().checkout());
+    // }
+    else {
       toast("Payment method not implemented: ${selected.type}");
     }
   }

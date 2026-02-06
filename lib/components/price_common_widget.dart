@@ -208,6 +208,25 @@ class PriceCommonWidget extends StatelessWidget {
                     ],
                   ),
 
+                /// Show Extra Vehicles Price
+                if (bookingDetail.extraVehicles.validate().isNotEmpty)
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Extra Vehicle', style: secondaryTextStyle(size: 14)).flexible(fit: FlexFit.loose),
+                          16.width,
+                          PriceWidget(
+                            price: bookingDetail.extraVehicles.validate().sumByDouble((e) => (e.price ?? 0).toDouble() * (e.quantity ?? 1)),
+                            color: textPrimaryColorGlobal,
+                          )
+                        ],
+                      ),
+                      16.height,
+                    ],
+                  ),
+
                 if ((bookingDetail.isHourlyService || bookingDetail.isFixedService))
                   if (bookingDetail.totalExtraChargeAmount != 0)
                     Column(

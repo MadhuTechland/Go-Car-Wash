@@ -112,9 +112,93 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
       afterBuildCreated(() => startLocationUpdates(
           status: status, handymanID: id, isFirstTimeLoad: true));
     });
+
+    // Check for daily wash booking: if onGoing and start date is today, update to inProgress
+    future.then((bookingDetailResponse) {
+      _checkAndUpdateDailyWashStatus(bookingDetailResponse);
+    });
+
     if (flag) {
       _paymentUniqueKey = UniqueKey();
       setState(() {});
+    }
+  }
+
+  /// Check if daily wash booking is onGoing and start date is today, then update to inProgress
+  /// Also check if inProgress and end date is today/past, then update to complete
+  Future<void> _checkAndUpdateDailyWashStatus(BookingDetailResponse bookingDetailResponse) async {
+    final bookingDetail = bookingDetailResponse.bookingDetail;
+    if (bookingDetail == null) return;
+
+    // Check if it's a daily wash booking
+    if (bookingDetail.bookingsType != "daily") return;
+
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+
+    // Case 1: If status is onGoing and start date is today/past, update to inProgress
+    if (bookingDetail.status == BookingStatusKeys.onGoing) {
+      final bookingDateStr = bookingDetail.date.validate();
+      if (bookingDateStr.isEmpty) return;
+
+      try {
+        final bookingDate = DateTime.parse(bookingDateStr);
+        final bookingDateOnly = DateTime(bookingDate.year, bookingDate.month, bookingDate.day);
+
+        if (bookingDateOnly.isAtSameMomentAs(todayDate) || bookingDateOnly.isBefore(todayDate)) {
+          var request = {
+            CommonKeys.id: bookingDetail.id.validate(),
+            BookingUpdateKeys.status: BookingStatusKeys.inProgress,
+            BookingUpdateKeys.paymentStatus: bookingDetail.isAdvancePaymentDone
+                ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID
+                : bookingDetail.paymentStatus.validate(),
+          };
+
+          await bookingUpdate(request).then((res) async {
+            LiveStream().emit(LIVESTREAM_UPDATE_BOOKINGS);
+            init(flag: true);
+          }).catchError((e) {
+            log('Error updating daily wash status to inProgress: ${e.toString()}');
+          });
+        }
+      } catch (e) {
+        log('Error parsing booking date: ${e.toString()}');
+      }
+    }
+
+    // Case 2: If status is inProgress, fetch daily reports to get end_date and check if it's today/past
+    if (bookingDetail.status == BookingStatusKeys.inProgress) {
+      try {
+        final dailyReportResponse = await getDailyReportsAPI(
+          bookingId: bookingDetail.id.toString(),
+        );
+
+        final endDateStr = dailyReportResponse.endDate;
+        if (endDateStr.isEmpty) return;
+
+        final endDate = DateTime.parse(endDateStr);
+        final endDateOnly = DateTime(endDate.year, endDate.month, endDate.day);
+
+        // If end date is today or past, update status to complete
+        if (endDateOnly.isAtSameMomentAs(todayDate) || endDateOnly.isBefore(todayDate)) {
+          var request = {
+            CommonKeys.id: bookingDetail.id.validate(),
+            BookingUpdateKeys.status: BookingStatusKeys.complete,
+            BookingUpdateKeys.paymentStatus: bookingDetail.isAdvancePaymentDone
+                ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID
+                : bookingDetail.paymentStatus.validate(),
+          };
+
+          await bookingUpdate(request).then((res) async {
+            LiveStream().emit(LIVESTREAM_UPDATE_BOOKINGS);
+            init(flag: true);
+          }).catchError((e) {
+            log('Error updating daily wash status to complete: ${e.toString()}');
+          });
+        }
+      } catch (e) {
+        log('Error checking end date for daily wash: ${e.toString()}');
+      }
     }
   }
 
@@ -141,7 +225,6 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
           );
         },
       );
-
       return;
     }
     showConfirmDialogCustom(
@@ -1146,7 +1229,19 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
                     };
                     appStore.setLoading(true);
 
-                    await assignBooking(request).then((res) async {
+                    await assignBooking(request).then((assignRes) async {
+                      // For daily wash bookings, update status to onGoing after assignment
+                      if (res.bookingDetail!.bookingsType == "daily") {
+                        var updateRequest = {
+                          CommonKeys.id: res.bookingDetail!.id.validate(),
+                          BookingUpdateKeys.status: BookingStatusKeys.onGoing,
+                          BookingUpdateKeys.paymentStatus:
+                              res.bookingDetail!.isAdvancePaymentDone
+                                  ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID
+                                  : res.bookingDetail!.paymentStatus.validate(),
+                        };
+                        await bookingUpdate(updateRequest);
+                      }
                       LiveStream().emit(LIVESTREAM_UPDATE_BOOKINGS);
                       init(flag: true);
                     }).catchError((e) {
@@ -1162,9 +1257,14 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
                   positiveText: languages.lblYes,
                   negativeText: languages.lblNo,
                   onAccept: (_) async {
+                    // For daily wash bookings, set status to onGoing directly
+                    String newStatus = res.bookingDetail!.bookingsType == "daily"
+                        ? BookingStatusKeys.onGoing
+                        : BookingStatusKeys.accept;
+
                     var request = {
                       CommonKeys.id: res.bookingDetail!.id.validate(),
-                      BookingUpdateKeys.status: BookingStatusKeys.accept,
+                      BookingUpdateKeys.status: newStatus,
                       BookingUpdateKeys.paymentStatus:
                           res.bookingDetail!.isAdvancePaymentDone
                               ? SERVICE_PAYMENT_STATUS_ADVANCE_PAID
@@ -1456,6 +1556,140 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
     );
   }
 
+  Widget _extraVehiclesWidget({required List<ExtraVehicle> extraVehicles}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Extra Vehicles',
+          style: boldTextStyle(size: LABEL_TEXT_SIZE),
+        ),
+        12.height,
+        AnimatedListView(
+          itemCount: extraVehicles.length,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          listAnimationType: ListAnimationType.FadeIn,
+          fadeInConfiguration: FadeInConfiguration(duration: 2.seconds),
+          itemBuilder: (_, index) {
+            ExtraVehicle vehicle = extraVehicles[index];
+            return Container(
+              margin: EdgeInsets.only(bottom: 12),
+              decoration: boxDecorationWithRoundedCorners(
+                backgroundColor: context.cardColor,
+                borderRadius: radius(),
+                border: appStore.isDarkMode
+                    ? Border.all(color: context.dividerColor)
+                    : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Vehicle Image
+                      ClipRRect(
+                        borderRadius: radius(8),
+                        child: CachedImageWidget(
+                          url: vehicle.serviceImages?.isNotEmpty == true
+                              ? vehicle.serviceImages!.first
+                              : '',
+                          height: 70,
+                          width: 70,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      12.width,
+                      /// Vehicle Details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              vehicle.serviceName ?? 'Vehicle',
+                              style: boldTextStyle(size: 14),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            6.height,
+                            if (vehicle.planName != null)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: boxDecorationWithRoundedCorners(
+                                  backgroundColor:
+                                      primaryColor.withOpacity(0.1),
+                                  borderRadius: radius(4),
+                                ),
+                                child: Text(
+                                  vehicle.planName!,
+                                  style: secondaryTextStyle(
+                                    size: 12,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ),
+                            8.height,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                if ((vehicle.quantity ?? 1) > 1)
+                                  Text(
+                                    'Qty: ${vehicle.quantity}',
+                                    style: secondaryTextStyle(size: 12),
+                                  ),
+                                PriceWidget(
+                                  price: (vehicle.price ?? 0).toDouble(),
+                                  color: primaryColor,
+                                  size: 16,
+                                  isBoldText: true,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ).paddingAll(12),
+                  /// Status Badge
+                //   if (vehicle.status != null)
+                //     Container(
+                //       width: double.infinity,
+                //       padding: EdgeInsets.symmetric(vertical: 8),
+                //       decoration: BoxDecoration(
+                //         color: vehicle.status == 'pending'
+                //             ? Colors.orange.withOpacity(0.1)
+                //             : vehicle.status == 'completed'
+                //                 ? Colors.green.withOpacity(0.1)
+                //                 : Colors.grey.withOpacity(0.1),
+                //         borderRadius: BorderRadius.only(
+                //           bottomLeft: Radius.circular(defaultRadius),
+                //           bottomRight: Radius.circular(defaultRadius),
+                //         ),
+                //       ),
+                //       child: Text(
+                //         vehicle.status!.capitalizeFirstLetter(),
+                //         style: boldTextStyle(
+                //           size: 12,
+                //           color: vehicle.status == 'pending'
+                //               ? Colors.orange
+                //               : vehicle.status == 'completed'
+                //                   ? Colors.green
+                //                   : Colors.grey,
+                //         ),
+                //         textAlign: TextAlign.center,
+                //       ),
+                //     ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    ).paddingSymmetric(horizontal: 16, vertical: 8);
+  }
+
   //endregion
 
   //region Body
@@ -1691,6 +1925,15 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
                         ),
                     ],
                   ).paddingOnly(left: 16, right: 16, bottom: 16),
+
+                  /// Extra Vehicles Section
+                  if (res.data!.bookingDetail!.extraVehicles
+                      .validate()
+                      .isNotEmpty)
+                    _extraVehiclesWidget(
+                      extraVehicles:
+                          res.data!.bookingDetail!.extraVehicles.validate(),
+                    ),
 
                   /// Price Detail Card
                   if (res.data!.bookingDetail != null &&
@@ -1986,7 +2229,7 @@ class BookingDetailScreenState extends State<BookingDetailScreen>
                     style: secondaryTextStyle(size: 14),
                   ),
                   Text(
-                    '${bookingDetail.plan!.duration.validate()} days',
+                    '${bookingDetail.plan!.duration.validate()}',
                     style: boldTextStyle(size: 14, color: primaryColor),
                   ),
                 ],

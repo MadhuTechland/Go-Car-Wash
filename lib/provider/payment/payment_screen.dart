@@ -188,34 +188,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
           );
         },
       ).then((value) => appStore.setLoading(false));
-    } else if (selectedPaymentSetting!.type == PAYMENT_METHOD_PAYSTACK) {
-      PayStackService paystackServices = PayStackService();
-      appStore.setLoading(true);
-      await paystackServices.init(
-        context: context,
-        currentPaymentMethod: selectedPaymentSetting!,
-        loderOnOFF: (p0) {
-          appStore.setLoading(p0);
-        },
-        totalAmount: widget.selectedPricingPlan.amount.validate(),
-        bookingId: appStore.userId.validate().toInt(),
-        onComplete: (res) {
-          log('RES: $res');
-          savePayment(
-            data: widget.selectedPricingPlan,
-            paymentMethod: PAYMENT_METHOD_PAYSTACK,
-            paymentStatus: BOOKING_STATUS_PAID,
-            txnId: res['transaction_id'],
-          );
-        },
-      );
-      await Future.delayed(const Duration(seconds: 1));
-      appStore.setLoading(false);
-      paystackServices.checkout().catchError((e) {
-        appStore.setLoading(false);
-        toast(e);
-      });
-    } else if (selectedPaymentSetting!.type == PAYMENT_METHOD_MIDTRANS) {
+    }
+    //  else if (selectedPaymentSetting!.type == PAYMENT_METHOD_PAYSTACK) {
+    //   PayStackService paystackServices = PayStackService();
+    //   appStore.setLoading(true);
+    //   await paystackServices.init(
+    //     context: context,
+    //     currentPaymentMethod: selectedPaymentSetting!,
+    //     loderOnOFF: (p0) {
+    //       appStore.setLoading(p0);
+    //     },
+    //     totalAmount: widget.selectedPricingPlan.amount.validate(),
+    //     bookingId: appStore.userId.validate().toInt(),
+    //     onComplete: (res) {
+    //       log('RES: $res');
+    //       savePayment(
+    //         data: widget.selectedPricingPlan,
+    //         paymentMethod: PAYMENT_METHOD_PAYSTACK,
+    //         paymentStatus: BOOKING_STATUS_PAID,
+    //         txnId: res['transaction_id'],
+    //       );
+    //     },
+    //   );
+    //   await Future.delayed(const Duration(seconds: 1));
+    //   appStore.setLoading(false);
+    //   paystackServices.checkout().catchError((e) {
+    //     appStore.setLoading(false);
+    //     toast(e);
+    //   });
+    // }
+    else if (selectedPaymentSetting!.type == PAYMENT_METHOD_MIDTRANS) {
       MidtransService midtransService = MidtransService();
       appStore.setLoading(true);
       await midtransService.initialize(
